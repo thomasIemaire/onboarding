@@ -1,0 +1,23 @@
+:host {
+    display: block;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+input,
+p-select {
+    width: 100%;
+}
+
+.required {
+    color: var(--p-red-500);
+}
+
+.error {
+    color: #e24c4c;
+    margin-top: 0.25rem;
+    display: block;
+}
