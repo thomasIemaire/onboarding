@@ -1127,3 +1127,293 @@ git push origin --delete hotfix/required-field
 ```
 
 > Un hotfix est mergé dans **main** ET **develop** pour que les deux branches restent synchronisées.
+
+---
+
+## Service Members
+
+### 31. Créer une branche pour le service members
+
+```bash
+git checkout -b feature/members-service develop
+```
+
+### 32. Ajouter la propriété `key` au modèle FieldConfig
+
+Dans `core/models/field.ts`, ajouter `key` pour identifier chaque champ lors de la collecte des valeurs :
+
+```ts
+export type FieldType = 'text' | 'select';
+
+export interface FieldConfig {
+    key: string;
+    label?: string;
+    type: FieldType;
+    options?: any[];
+    default?: any;
+    required?: boolean;
+}
+```
+
+> `key` permet de mapper la valeur saisie au bon champ (ex: `'nom'`, `'email'`).
+
+### 33. Créer le service MembersService
+
+```bash
+ng generate service services/members
+```
+
+#### 33.1 Ajouter la logique dans `services/members.ts`
+
+```ts
+import { Injectable } from '@angular/core';
+import { Member } from '../core/models/member';
+
+@Injectable({
+    providedIn: 'root',
+})
+export class MembersService {
+    private members: Member[] = [
+        { nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@email.com', status: 'admin' },
+        { nom: 'Martin', prenom: 'Sophie', email: 'sophie.martin@email.com', status: 'editeur' },
+        { nom: 'Durand', prenom: 'Pierre', email: 'pierre.durand@email.com', status: 'lecteur' },
+    ];
+
+    getMembers(): Member[] {
+        return this.members;
+    }
+
+    addMember(member: Member): void {
+        this.members.push(member);
+    }
+}
+```
+
+> `providedIn: 'root'` rend le service disponible globalement sans l'ajouter manuellement aux providers.
+> Les 3 membres sont des données mock pour tester l'affichage.
+
+### 34. Propager les valeurs du formulaire vers le parent
+
+Pour que le formulaire puisse remonter les valeurs saisies, il faut propager un `Output` depuis chaque `FieldComponent` jusqu'au `FormComponent`.
+
+#### 34.1 Modifier `field.ts`
+
+Ajouter un `Output` qui émet la clé et la valeur à chaque changement :
+
+```ts
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { TextFieldComponent } from '../text-field/text-field';
+import { SelectFieldComponent } from '../select-field/select-field';
+import { FieldConfig } from '../../core/models/field';
+
+@Component({
+    ...
+    imports: [TextFieldComponent, SelectFieldComponent]
+})
+export class FieldComponent {
+    @Input({ required: true }) field!: FieldConfig;
+    @Input() submitted: boolean = false;
+    @Output() fieldValueChange = new EventEmitter<{ key: string; value: any }>();
+
+    value: any = '';
+
+    onValueChange(val: any): void {
+        this.value = val;
+        this.fieldValueChange.emit({ key: this.field.key, value: val });
+    }
+
+    get showError(): boolean {
+        return this.submitted && !!this.field.required && !this.value;
+    }
+}
+```
+
+#### 34.2 Modifier `form-row.ts`
+
+Re-émettre l'événement de changement de valeur :
+
+```ts
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { FieldComponent } from '../field/field';
+import { FormRowConfig } from '../../core/models/form-row';
+
+@Component({
+    ...
+    imports: [FieldComponent]
+})
+export class FormRowComponent {
+    @Input({ required: true }) row!: FormRowConfig;
+    @Input() submitted: boolean = false;
+    @Output() fieldValueChange = new EventEmitter<{ key: string; value: any }>();
+
+    onFieldValueChange(event: { key: string; value: any }): void {
+        this.fieldValueChange.emit(event);
+    }
+}
+```
+
+#### 34.3 Modifier le template `form-row.html`
+
+```html
+@if (row.title) {
+    <h3>{{ row.title }}</h3>
+}
+
+<div class="form-row">
+    @for (field of row.fields; track field) {
+        <app-field [field]="field" [submitted]="submitted" (fieldValueChange)="onFieldValueChange($event)" />
+    }
+</div>
+```
+
+#### 34.4 Modifier `form.ts`
+
+Collecter les valeurs et émettre un `formSubmit` avec validation :
+
+```ts
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { FormRowComponent } from '../form-row/form-row';
+import { FormActionsComponent } from '../form-actions/form-actions';
+import { FormConfig } from '../../core/models/form';
+
+@Component({
+    ...
+    imports: [FormRowComponent, FormActionsComponent]
+})
+export class FormComponent {
+    @Input({ required: true }) config!: FormConfig;
+    @Output() formSubmit = new EventEmitter<Record<string, any>>();
+
+    submitted: boolean = false;
+    values: Record<string, any> = {};
+
+    onFieldValueChange(event: { key: string; value: any }): void {
+        this.values[event.key] = event.value;
+    }
+
+    onSubmit(): void {
+        this.submitted = true;
+
+        const hasErrors = this.config.rows
+            .flatMap(row => row.fields)
+            .some(field => field.required && !this.values[field.key]);
+
+        if (!hasErrors) {
+            this.formSubmit.emit({ ...this.values });
+        }
+    }
+}
+```
+
+#### 34.5 Modifier le template `form.html`
+
+```html
+@if (config.title) {
+    <h2>{{ config.title }}</h2>
+}
+
+@for (row of config.rows; track row) {
+    <app-form-row [row]="row" [submitted]="submitted" (fieldValueChange)="onFieldValueChange($event)" />
+}
+
+@if (config.actions) {
+    <app-form-actions [config]="config.actions" (actionClick)="onSubmit()" />
+}
+```
+
+> Le `FormComponent` collecte les valeurs via `onFieldValueChange` et les émet via `formSubmit` uniquement si la validation passe.
+
+### 35. Utiliser le service dans la page members
+
+#### 35.1 Modifier `members.ts`
+
+```ts
+import { Component, inject } from '@angular/core';
+import { FormComponent } from '../../components/form/form';
+import { FormConfig } from '../../core/models/form';
+import { Member } from '../../core/models/member';
+import { MembersService } from '../../services/members';
+
+@Component({
+    ...
+    imports: [FormComponent]
+})
+export class MembersComponent {
+    private membersService = inject(MembersService);
+    members: Member[] = this.membersService.getMembers();
+
+    formConfig: FormConfig = {
+        title: 'Ajouter un membre',
+        rows: [
+            {
+                fields: [
+                    { key: 'nom', type: 'text', label: 'Nom', required: true },
+                    { key: 'prenom', type: 'text', label: 'Prénom', required: true }
+                ]
+            },
+            {
+                fields: [
+                    { key: 'email', type: 'text', label: 'Email', required: true }
+                ]
+            },
+            {
+                fields: [
+                    {
+                        key: 'status',
+                        type: 'select',
+                        label: 'Statut',
+                        options: ['lecteur', 'editeur', 'admin'],
+                        default: 'lecteur'
+                    }
+                ]
+            }
+        ],
+        actions: {
+            actions: [
+                {
+                    label: 'Ajouter',
+                    severity: 'primary',
+                    icon: 'pi pi-plus',
+                    command: () => {}
+                }
+            ]
+        }
+    };
+
+    addMember(values: Record<string, any>): void {
+        const member: Member = {
+            nom: values['nom'],
+            prenom: values['prenom'],
+            email: values['email'],
+            status: values['status'] ?? 'lecteur',
+        };
+        this.membersService.addMember(member);
+    }
+}
+```
+
+> `inject(MembersService)` est l'injection de dépendance fonctionnelle (alternative au constructeur).
+> `addMember` reçoit les valeurs du formulaire via l'Output `formSubmit` et les ajoute au service.
+
+#### 35.2 Modifier le template `members.html`
+
+```html
+<h1>Membres</h1>
+
+<app-form [config]="formConfig" [style.width.px]="400" (formSubmit)="addMember($event)" />
+```
+
+> `(formSubmit)` écoute l'événement émis par le `FormComponent` après validation.
+
+### 36. Sauvegarder et merger dans develop
+
+```bash
+git add .
+git commit -m "Ajout du service members avec données mock"
+git push -u origin feature/members-service
+git checkout develop
+git merge feature/members-service
+git push -u origin develop
+git branch -d feature/members-service
+git push origin --delete feature/members-service
+```

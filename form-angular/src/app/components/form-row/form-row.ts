@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FieldComponent } from '../field/field';
 import { FormRowConfig } from '../../core/models/form-row';
 
@@ -11,4 +11,9 @@ import { FormRowConfig } from '../../core/models/form-row';
 export class FormRowComponent {
     @Input({ required: true }) row!: FormRowConfig;
     @Input() submitted: boolean = false;
+    @Output() fieldValueChange = new EventEmitter<{ key: string; value: any }>();
+
+    onFieldValueChange(event: { key: string; value: any }): void {
+        this.fieldValueChange.emit(event);
+    }
 }

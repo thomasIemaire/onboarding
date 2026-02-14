@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 
@@ -9,7 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
     styleUrl: './text-field.scss',
 })
 export class TextFieldComponent {
-    value: string = '';
+    @Input() value: string = '';
     @Output() valueChange = new EventEmitter<string>();
 
     onInput(): void {

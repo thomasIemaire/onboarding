@@ -3,7 +3,7 @@
 }
 
 @for (row of config.rows; track row) {
-    <app-form-row [row]="row" [submitted]="submitted" />
+    <app-form-row [row]="row" [submitted]="submitted" (fieldValueChange)="onFieldValueChange($event)" />
 }
 
 @if (config.actions) {

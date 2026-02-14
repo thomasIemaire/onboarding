@@ -4,6 +4,6 @@
 
 <div class="form-row">
     @for (field of row.fields; track field) {
-        <app-field [field]="field" [submitted]="submitted" />
+        <app-field [field]="field" [submitted]="submitted" (fieldValueChange)="onFieldValueChange($event)" />
     }
 </div>

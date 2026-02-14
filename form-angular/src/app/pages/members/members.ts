@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormComponent } from '../../components/form/form';
 import { FormConfig } from '../../core/models/form';
 import { Member } from '../../core/models/member';
+import { MembersService } from '../../services/members';
 
 @Component({
     selector: 'app-members',
@@ -10,25 +11,27 @@ import { Member } from '../../core/models/member';
     styleUrl: './members.scss',
 })
 export class MembersComponent {
-    members: Member[] = [];
+    private membersService = inject(MembersService);
+    members: Member[] = this.membersService.getMembers();
 
     formConfig: FormConfig = {
         title: 'Ajouter un membre',
         rows: [
             {
                 fields: [
-                    { type: 'text', label: 'Nom', required: true },
-                    { type: 'text', label: 'Prénom', required: true }
+                    { key: 'nom', type: 'text', label: 'Nom', required: true },
+                    { key: 'prenom', type: 'text', label: 'Prénom', required: true }
                 ]
             },
             {
                 fields: [
-                    { type: 'text', label: 'Email', required: true }
+                    { key: 'email', type: 'text', label: 'Email', required: true }
                 ]
             },
             {
                 fields: [
                     {
+                        key: 'status',
                         type: 'select',
                         label: 'Statut',
                         options: ['lecteur', 'editeur', 'admin'],
@@ -43,13 +46,19 @@ export class MembersComponent {
                     label: 'Ajouter',
                     severity: 'primary',
                     icon: 'pi pi-plus',
-                    command: () => this.addMember()
+                    command: () => {}
                 }
             ]
         }
     };
 
-    addMember(): void {
-        // TODO: récupérer les valeurs du formulaire et ajouter le membre
+    addMember(values: Record<string, any>): void {
+        const member: Member = {
+            nom: values['nom'],
+            prenom: values['prenom'],
+            email: values['email'],
+            status: values['status'] ?? 'lecteur',
+        };
+        this.membersService.addMember(member);
     }
 }
