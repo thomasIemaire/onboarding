@@ -1417,3 +1417,100 @@ git push -u origin develop
 git branch -d feature/members-service
 git push origin --delete feature/members-service
 ```
+
+---
+
+## Liste des membres
+
+### 37. Créer une branche pour la liste des membres
+
+```bash
+git checkout -b feature/list-members develop
+```
+
+### 38. Ajouter la table PrimeNG dans la page members
+
+#### 38.1 Modifier `members.ts`
+
+Importer `TableModule` de PrimeNG :
+
+```ts
+import { Component, inject } from '@angular/core';
+import { FormComponent } from '../../components/form/form';
+import { FormConfig } from '../../core/models/form';
+import { Member } from '../../core/models/member';
+import { MembersService } from '../../services/members';
+import { TableModule } from 'primeng/table';
+
+@Component({
+    ...
+    imports: [FormComponent, TableModule]
+})
+export class MembersComponent {
+    ...
+}
+```
+
+> `TableModule` est le composant table de PrimeNG, puissant et configurable.
+
+#### 38.2 Modifier le template `members.html`
+
+Ajouter la table en dessous du formulaire :
+
+```html
+<h1>Membres</h1>
+
+<app-form [config]="formConfig" [style.width.px]="400" (formSubmit)="addMember($event)" />
+
+<h2>Liste des membres</h2>
+
+<p-table [value]="members" [tableStyle]="{ 'min-width': '50rem' }">
+    <ng-template #header>
+        <tr>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>Statut</th>
+        </tr>
+    </ng-template>
+    <ng-template #body let-member>
+        <tr>
+            <td>{{ member.nom }}</td>
+            <td>{{ member.prenom }}</td>
+            <td>{{ member.email }}</td>
+            <td>{{ member.status }}</td>
+        </tr>
+    </ng-template>
+    <ng-template #emptymessage>
+        <tr>
+            <td colspan="4">Aucun membre</td>
+        </tr>
+    </ng-template>
+</p-table>
+```
+
+> `p-table` est le composant table de PrimeNG.
+> `#header` définit l'en-tête du tableau.
+> `#body` définit le template de chaque ligne avec `let-member` pour accéder aux données.
+> `#emptymessage` affiche un message quand la liste est vide.
+
+#### 38.3 Ajouter le style dans `members.scss`
+
+```scss
+h2 {
+    margin-top: 2rem;
+}
+```
+
+### 39. Sauvegarder et merger dans develop
+
+```bash
+git add .
+git commit -m "Ajout de la liste des membres avec PrimeNG Table"
+git push -u origin feature/list-members
+git checkout develop
+git merge feature/list-members
+git push -u origin develop
+git branch -d feature/list-members
+git push origin --delete feature/list-members
+```
