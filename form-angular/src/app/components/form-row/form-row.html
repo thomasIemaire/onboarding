@@ -1,9 +1,0 @@
-@if (row.title) {
-    <h3>{{ row.title }}</h3>
-}
-
-<div class="form-row">
-    @for (field of row.fields; track field) {
-        <app-field [field]="field" [submitted]="submitted" (fieldValueChange)="onFieldValueChange($event)" />
-    }
-</div>

@@ -28,8 +28,8 @@ git checkout -b feature/create-project develop
 ### 3. Créer un nouveau projet
 
 ```bash
-ng new form-angular --style=scss --ssr=false --skip-tests
-cd form-angular
+ng new frontend --style=scss --ssr=false --skip-tests
+cd frontend
 ```
 
 ### 4. Installer PrimeNG
@@ -613,13 +613,13 @@ git checkout -b feature/members develop
 Créer le fichier `core/models/member.ts` :
 
 ```ts
-export type MemberStatus = 'lecteur' | 'editeur' | 'admin';
+export type MemberRole = 'membre' | 'admin';
 
 export interface Member {
     nom: string;
     prenom: string;
     email: string;
-    status: MemberStatus;
+    role: MemberRole;
 }
 ```
 
@@ -712,8 +712,8 @@ export class MembersComponent {
                     {
                         type: 'select',
                         label: 'Statut',
-                        options: ['lecteur', 'editeur', 'admin'],
-                        default: 'lecteur'
+                        options: ['membre', 'admin'],
+                        default: 'membre'
                     }
                 ]
             }
@@ -742,8 +742,6 @@ export class MembersComponent {
 #### 20.2 Ajouter le template dans `members.html`
 
 ```html
-<h1>Membres</h1>
-
 <app-form [config]="formConfig" [style.width.px]="400" />
 ```
 
@@ -1091,8 +1089,8 @@ formConfig: FormConfig = {
                 {
                     type: 'select',
                     label: 'Statut',
-                    options: ['lecteur', 'editeur', 'admin'],
-                    default: 'lecteur'
+                    options: ['membre', 'admin'],
+                    default: 'membre'
                 }
             ]
         }
@@ -1174,9 +1172,9 @@ import { Member } from '../core/models/member';
 })
 export class MembersService {
     private members: Member[] = [
-        { nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@email.com', status: 'admin' },
-        { nom: 'Martin', prenom: 'Sophie', email: 'sophie.martin@email.com', status: 'editeur' },
-        { nom: 'Durand', prenom: 'Pierre', email: 'pierre.durand@email.com', status: 'lecteur' },
+        { nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@email.com', role: 'admin' },
+        { nom: 'Martin', prenom: 'Sophie', email: 'sophie.martin@email.com', role: 'membre' },
+        { nom: 'Durand', prenom: 'Pierre', email: 'pierre.durand@email.com', role: 'membre' },
     ];
 
     getMembers(): Member[] {
@@ -1359,11 +1357,11 @@ export class MembersComponent {
             {
                 fields: [
                     {
-                        key: 'status',
+                        key: 'role',
                         type: 'select',
                         label: 'Statut',
-                        options: ['lecteur', 'editeur', 'admin'],
-                        default: 'lecteur'
+                        options: ['membre', 'admin'],
+                        default: 'membre'
                     }
                 ]
             }
@@ -1385,7 +1383,7 @@ export class MembersComponent {
             nom: values['nom'],
             prenom: values['prenom'],
             email: values['email'],
-            status: values['status'] ?? 'lecteur',
+            role: values['role'] ?? 'membre',
         };
         this.membersService.addMember(member);
     }
@@ -1398,8 +1396,6 @@ export class MembersComponent {
 #### 35.2 Modifier le template `members.html`
 
 ```html
-<h1>Membres</h1>
-
 <app-form [config]="formConfig" [style.width.px]="400" (formSubmit)="addMember($event)" />
 ```
 
@@ -1458,9 +1454,6 @@ export class MembersComponent {
 Ajouter la table en dessous du formulaire :
 
 ```html
-<header>
-    <h1>Membres</h1>
-</header>
 <div class="page">
     <section>
         <app-form [config]="formConfig" [style.width.px]="400" (formSubmit)="addMember($event)" />
@@ -1482,7 +1475,7 @@ Ajouter la table en dessous du formulaire :
                     <td>{{ member.nom }}</td>
                     <td>{{ member.prenom }}</td>
                     <td>{{ member.email }}</td>
-                    <td>{{ member.status }}</td>
+                    <td>{{ member.role }}</td>
                 </tr>
             </ng-template>
             <ng-template #emptymessage>
@@ -1539,36 +1532,34 @@ git push origin --delete feature/list-members
 ### 40. Créer la branche hotfix
 
 ```bash
-git checkout -b hotfix/tag-status main
+git checkout -b hotfix/tag-role main
 ```
 
-### 41. Créer un pipe personnalisé `statusSeverity`
+### 41. Créer un pipe personnalisé `roleSeverity`
 
 Un pipe qui transforme le statut d'un membre en severity PrimeNG pour le composant `p-tag`.
 
 #### 41.1 Générer le pipe
 
 ```bash
-ng generate pipe shared/status-severity
+ng generate pipe shared/pipes/role-severity
 ```
 
-#### 41.2 Ajouter la logique dans `shared/status-severity-pipe.ts`
+#### 41.2 Ajouter la logique dans `shared/pipes/role-severity.ts`
 
 ```ts
 import { Pipe, PipeTransform } from '@angular/core';
-import { MemberStatus } from '../core/models/member';
+import { MemberRole } from '../core/models/member';
 
 @Pipe({
-    name: 'statusSeverity',
+    name: 'roleSeverity',
 })
-export class StatusSeverityPipe implements PipeTransform {
-    transform(value: MemberStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+export class RoleSeverityPipe implements PipeTransform {
+    transform(value: MemberRole): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
         switch (value) {
             case 'admin':
                 return 'danger';
-            case 'editeur':
-                return 'warn';
-            case 'lecteur':
+            case 'membre':
                 return 'info';
             default:
                 return 'secondary';
@@ -1578,7 +1569,7 @@ export class StatusSeverityPipe implements PipeTransform {
 ```
 
 > Un **pipe** Angular transforme une valeur dans un template via la syntaxe `{{ value | pipeName }}`.
-> Ici, il convertit le statut (`'lecteur'`, `'editeur'`, `'admin'`) en severity PrimeNG (`'info'`, `'warn'`, `'danger'`).
+> Ici, il convertit le statut (`'membre'`, `'admin'`) en severity PrimeNG (`'info'`, `'warn'`, `'danger'`).
 
 ### 42. Utiliser le pipe et le tag dans la page members
 
@@ -1589,11 +1580,11 @@ Importer `TagModule` et le pipe :
 ```ts
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { StatusSeverityPipe } from '../../shared/status-severity-pipe';
+import { RoleSeverityPipe } from '../../shared/pipes/role-severity';
 
 @Component({
     ...
-    imports: [FormComponent, TableModule, TagModule, StatusSeverityPipe]
+    imports: [FormComponent, TableModule, TagModule, RoleSeverityPipe]
 })
 ```
 
@@ -1604,26 +1595,621 @@ import { StatusSeverityPipe } from '../../shared/status-severity-pipe';
 Remplacer l'affichage texte du statut par un `p-tag` :
 
 ```html
-<td><p-tag [value]="member.status" [severity]="member.status | statusSeverity" /></td>
+<td><p-tag [value]="member.role" [severity]="member.role | roleSeverity" /></td>
 ```
 
 > `p-tag` est le composant Tag de PrimeNG qui affiche un label coloré.
-> `[severity]` reçoit la valeur transformée par le pipe `statusSeverity`.
+> `[severity]` reçoit la valeur transformée par le pipe `roleSeverity`.
 
 ### 43. Sauvegarder et merger le hotfix
 
 ```bash
 git add .
 git commit -m "Hotfix: affichage du statut en tag PrimeNG"
-git push -u origin hotfix/tag-status
+git push -u origin hotfix/tag-role
 git checkout main
-git merge hotfix/tag-status
+git merge hotfix/tag-role
 git push origin main
 git checkout develop
-git merge hotfix/tag-status
+git merge hotfix/tag-role
 git push origin develop
-git branch -d hotfix/tag-status
-git push origin --delete hotfix/tag-status
+git branch -d hotfix/tag-role
+git push origin --delete hotfix/tag-role
 ```
 
 > Un hotfix est mergé dans **main** ET **develop** pour que les deux branches restent synchronisées.
+
+---
+
+## Page Équipes
+
+> À partir d'ici, les étapes sont plus guidées que dictées. Utilisez les concepts vus précédemment pour implémenter les fonctionnalités.
+
+### 44. Créer une branche pour la page équipes
+
+```bash
+git checkout -b feature/teams develop
+```
+
+### 45. Renommer `status` en `role`
+
+Le champ `status` du modèle `Member` est renommé en `role` avec les valeurs `'membre' | 'admin'`.
+
+#### À faire :
+- Modifier `core/models/member.ts` : renommer `MemberStatus` en `MemberRole`, changer les valeurs en `'membre' | 'admin'`, renommer le champ `status` en `role`
+- Ajouter un champ `teamId: number` à l'interface `Member` pour lier un membre à une équipe
+- Mettre à jour `services/members.ts` : adapter les données mock, ajouter `teamId` aux membres, remplacer `getMembers()` par `getMembersByTeam(teamId: number)`
+- Renommer le pipe `StatusSeverityPipe` en `RoleSeverityPipe` dans `shared/pipes/role-severity.ts`, adapter le mapping
+- Mettre à jour la page `members` pour utiliser `role` au lieu de `status`
+
+### 46. Créer le modèle Team
+
+Créer `core/models/team.ts` avec une interface contenant un `id` et un `nom`.
+
+### 47. Créer le service TeamsService
+
+Générer un service `services/teams` et implémenter :
+- Une liste privée de teams mock (ex: Développement, Marketing, Design)
+- `getTeams()` : retourne toutes les équipes
+- `getTeamById(id: number)` : retourne une équipe par son id
+- `addTeam(nom: string)` : ajoute une nouvelle équipe avec un id auto-incrémenté
+
+> Inspirez-vous de la structure du `MembersService`.
+
+### 48. Créer la page Teams
+
+```bash
+ng generate component pages/teams
+```
+
+#### 48.1 Logique (`teams.ts`)
+
+- Injecter `TeamsService` et `Router`
+- Créer un `formConfig` avec un seul champ : le nom de l'équipe (`key: 'nom'`, `required: true`)
+- Implémenter `addTeam(values)` qui appelle le service
+- Implémenter `onRowSelect(event)` qui navigue vers `/teams/:id/membres`
+
+> Utilisez `Router.navigate()` pour la navigation programmatique.
+> L'événement `onRowSelect` de PrimeNG Table émet un objet `TableRowSelectEvent` — importez-le depuis `primeng/table`.
+
+#### 48.2 Template (`teams.html`)
+
+Même structure que la page members (header, layout en deux colonnes) :
+- À gauche : le formulaire de création via `<app-form>`
+- À droite : une `<p-table>` avec les équipes
+
+Pour rendre les lignes cliquables :
+
+```html
+<p-table [value]="teams" selectionMode="single" (onRowSelect)="onRowSelect($event)">
+    ...
+    <ng-template #body let-team>
+        <tr [pSelectableRow]="team">
+            <td>{{ team.nom }}</td>
+        </tr>
+    </ng-template>
+</p-table>
+```
+
+> `selectionMode="single"` active la sélection de ligne.
+> `[pSelectableRow]` rend la ligne cliquable et déclenche `onRowSelect`.
+
+#### 48.3 Style (`teams.scss`)
+
+Reprendre le même layout que `members.scss`.
+
+### 49. Mettre à jour le routing
+
+Dans `app.routes.ts`, configurer les routes suivantes :
+
+| Route | Composant | Description |
+|---|---|---|
+| `teams` | `TeamsComponent` | Liste des équipes |
+| `teams/:teamId/membres` | `MembersComponent` | Membres d'une équipe |
+| ` ` | redirect → `teams` | Route par défaut |
+| `**` | redirect → `teams` | Toute route inconnue |
+
+> La route `**` (wildcard) capture toutes les URLs non reconnues et redirige vers `/teams`.
+> Supprimer l'ancienne route `/members`.
+
+### 50. Adapter la page Members au contexte d'équipe
+
+La page members doit maintenant s'afficher dans le contexte d'une équipe.
+
+#### À faire :
+- Injecter `ActivatedRoute` pour récupérer le paramètre `teamId` depuis l'URL
+- Utiliser `ngOnInit()` pour initialiser les données (le `teamId` n'est pas disponible dans le constructeur)
+- Appeler `getMembersByTeam(teamId)` au lieu de `getMembers()`
+- Passer le `teamId` lors de l'ajout d'un nouveau membre
+- Afficher le nom de l'équipe dans le header
+- Ajouter un bouton retour vers `/teams`
+
+> Pour récupérer un paramètre de route :
+> ```ts
+> const teamId = Number(this.route.snapshot.paramMap.get('teamId'));
+> ```
+
+> Pour le bouton retour, utilisez `RouterLink` et `p-button` avec `[link]="true"` :
+> ```html
+> <p-button label="Retour aux équipes" icon="pi pi-arrow-left" [link]="true" routerLink="/teams" severity="secondary" />
+> ```
+
+### 51. Sauvegarder et merger dans develop
+
+```bash
+git add .
+git commit -m "Ajout de la page équipes avec navigation"
+git push -u origin feature/teams
+git checkout develop
+git merge feature/teams
+git push -u origin develop
+git branch -d feature/teams
+git push origin --delete feature/teams
+```
+
+---
+
+## API Node.js
+
+### 52. Créer une branche pour l'API
+
+```bash
+git checkout -b feature/api develop
+```
+
+### 53. Initialiser le projet
+
+```bash
+mkdir backend
+cd backend
+npm init -y
+npm install express cors
+npm install -D nodemon
+```
+
+#### 53.1 Configurer `package.json`
+
+Modifier les scripts :
+
+```json
+{
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node src/index.js",
+        "dev": "nodemon src/index.js"
+    }
+}
+```
+
+> `nodemon` redémarre automatiquement le serveur à chaque modification de fichier.
+
+#### 53.2 Créer l'arborescence
+
+```
+backend/src/
+├── controllers/   # Routes Express (point d'entrée HTTP)
+├── services/      # Logique métier (validation, règles)
+├── dao/           # Data Access Object (lecture/écriture en base)
+├── db/            # Fichier JSON (base de données)
+└── index.js       # Point d'entrée de l'application
+```
+
+> **Controller** → reçoit la requête HTTP, appelle le service, retourne la réponse.
+> **Service** → contient la logique métier (validation, transformations).
+> **DAO** → accède directement aux données (ici le fichier JSON).
+
+### 54. Créer la base de données JSON
+
+#### 54.1 Créer le fichier `src/db/data.json`
+
+```json
+{
+    "teams": [
+        { "id": 1, "nom": "Développement" },
+        { "id": 2, "nom": "Marketing" },
+        { "id": 3, "nom": "Design" }
+    ],
+    "members": [
+        { "id": 1, "nom": "Dupont", "prenom": "Jean", "email": "jean.dupont@email.com", "role": "admin", "teamId": 1 },
+        { "id": 2, "nom": "Martin", "prenom": "Sophie", "email": "sophie.martin@email.com", "role": "membre", "teamId": 1 },
+        { "id": 3, "nom": "Durand", "prenom": "Pierre", "email": "pierre.durand@email.com", "role": "membre", "teamId": 2 }
+    ]
+}
+```
+
+#### 54.2 Créer le module d'accès `src/db/db.js`
+
+```js
+const fs = require('fs');
+const path = require('path');
+
+const DB_PATH = path.join(__dirname, 'data.json');
+
+function read() {
+    const raw = fs.readFileSync(DB_PATH, 'utf-8');
+    return JSON.parse(raw);
+}
+
+function write(data) {
+    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 4), 'utf-8');
+}
+
+module.exports = { read, write };
+```
+
+> `fs.readFileSync` / `fs.writeFileSync` : lecture/écriture synchrone du fichier.
+> `path.join(__dirname, ...)` : construit un chemin absolu depuis le dossier courant.
+
+### 55. Créer le CRUD Teams (exemple complet)
+
+Cet exemple montre la chaîne complète **DAO → Service → Controller** pour les équipes.
+
+#### 55.1 Créer `src/dao/teams.dao.js`
+
+```js
+const db = require('../db/db');
+
+function findAll() {
+    const data = db.read();
+    return data.teams;
+}
+
+function findById(id) {
+    const data = db.read();
+    return data.teams.find(t => t.id === id);
+}
+
+function create(team) {
+    const data = db.read();
+    const newId = data.teams.length > 0
+        ? Math.max(...data.teams.map(t => t.id)) + 1
+        : 1;
+    const newTeam = { id: newId, ...team };
+    data.teams.push(newTeam);
+    db.write(data);
+    return newTeam;
+}
+
+module.exports = { findAll, findById, create };
+```
+
+> Le DAO ne fait aucune validation, il ne fait que lire/écrire dans la base.
+> L'id est auto-incrémenté en prenant le max des ids existants + 1.
+
+#### 55.2 Créer `src/services/teams.service.js`
+
+```js
+const teamsDao = require('../dao/teams.dao');
+
+function getAllTeams() {
+    return teamsDao.findAll();
+}
+
+function getTeamById(id) {
+    return teamsDao.findById(id);
+}
+
+function createTeam(teamData) {
+    if (!teamData.nom) {
+        throw new Error('Le nom est obligatoire');
+    }
+    return teamsDao.create({ nom: teamData.nom });
+}
+
+module.exports = { getAllTeams, getTeamById, createTeam };
+```
+
+> Le service valide les données avant de les passer au DAO.
+> Il `throw` une erreur si les données sont invalides — le controller la rattrapera.
+
+#### 55.3 Créer `src/controllers/teams.controller.js`
+
+```js
+const { Router } = require('express');
+const teamsService = require('../services/teams.service');
+
+const router = Router();
+
+router.get('/', (req, res) => {
+    const teams = teamsService.getAllTeams();
+    res.json(teams);
+});
+
+router.get('/:id', (req, res) => {
+    const team = teamsService.getTeamById(Number(req.params.id));
+    if (!team) {
+        return res.status(404).json({ error: 'Équipe introuvable' });
+    }
+    res.json(team);
+});
+
+router.post('/', (req, res) => {
+    try {
+        const team = teamsService.createTeam(req.body);
+        res.status(201).json(team);
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+module.exports = router;
+```
+
+> `Router()` crée un mini-routeur Express qu'on monte ensuite sur un chemin.
+> `req.params.id` récupère le paramètre de l'URL (ex: `/api/teams/1` → `id = "1"`).
+> `req.body` contient le corps de la requête POST (grâce à `express.json()`).
+> `res.status(201).json(...)` retourne un code 201 (Created) avec le JSON.
+
+### 56. Créer le point d'entrée de l'application
+
+Créer `src/index.js` :
+
+```js
+const express = require('express');
+const cors = require('cors');
+
+const teamsController = require('./controllers/teams.controller');
+
+const app = express();
+const PORT = 3000;
+
+app.use(cors());
+app.use(express.json());
+
+app.use('/api/teams', teamsController);
+
+app.listen(PORT, () => {
+    console.log(`API démarrée sur http://localhost:${PORT}`);
+});
+```
+
+> `cors()` autorise les requêtes cross-origin (nécessaire pour que Angular puisse appeler l'API).
+> `express.json()` parse automatiquement le body JSON des requêtes.
+> `app.use('/api/teams', teamsController)` monte le routeur sur le chemin `/api/teams`.
+> **Important** : les routes seront réorganisées à l'étape 57.4 — les routes les plus spécifiques doivent être montées **avant** les plus génériques.
+
+#### Tester l'API
+
+```bash
+npm run dev
+```
+
+Dans un autre terminal :
+
+```bash
+curl http://localhost:3000/api/teams
+curl -X POST http://localhost:3000/api/teams -H "Content-Type: application/json" -d "{\"nom\":\"Ressources Humaines\"}"
+```
+
+### 57. Créer le CRUD Members
+
+> En s'inspirant de l'exemple complet des Teams, créer la chaîne DAO → Service → Controller pour les membres.
+
+#### 57.1 Créer `src/dao/members.dao.js`
+
+Le DAO des membres doit implémenter :
+- `findByTeamId(teamId)` : retourne tous les membres d'une équipe
+- `create(member)` : ajoute un membre avec un id auto-incrémenté
+
+> Même logique que `teams.dao.js`, mais en filtrant sur `teamId` au lieu de tout retourner.
+
+#### 57.2 Créer `src/services/members.service.js`
+
+Le service doit :
+- Vérifier que l'équipe existe (via `teamsDao.findById`) avant de retourner ses membres
+- Valider que `nom`, `prenom` et `email` sont présents avant la création
+- Ajouter `teamId` et un `role` par défaut (`'membre'`) à chaque nouveau membre
+
+> `throw new Error(...)` si la validation échoue — le controller rattrapera l'erreur.
+
+#### 57.3 Créer `src/controllers/members.controller.js`
+
+Le controller doit :
+- Créer un `Router` avec l'option `{ mergeParams: true }`
+- Implémenter `GET /` et `POST /`
+- Récupérer `teamId` depuis `req.params.teamId`
+
+```js
+const router = Router({ mergeParams: true });
+```
+
+> **`mergeParams: true`** est nécessaire car ce routeur est monté en enfant d'une route paramétrée (`/api/teams/:teamId/members`). Sans cette option, `req.params.teamId` serait `undefined`.
+
+#### 57.4 Monter le controller dans `index.js`
+
+Ajouter le montage du controller members dans `src/index.js`. **Attention** : la route members doit être montée **avant** la route teams, car Express 5 matche les routes dans l'ordre de déclaration et `/api/teams` est un préfixe de `/api/teams/:teamId/members` :
+
+```js
+const membersController = require('./controllers/members.controller');
+
+// L'ordre est important : routes spécifiques AVANT routes génériques
+app.use('/api/teams/:teamId/members', membersController);
+app.use('/api/teams', teamsController);
+```
+
+#### Tester
+
+```bash
+curl http://localhost:3000/api/teams/1/members
+curl -X POST http://localhost:3000/api/teams/1/members -H "Content-Type: application/json" -d "{\"nom\":\"Leroy\",\"prenom\":\"Julie\",\"email\":\"julie@test.com\"}"
+```
+
+### 58. Sauvegarder et merger dans develop
+
+```bash
+git add .
+git commit -m "Ajout de l'API Node.js avec Express"
+git push -u origin feature/api
+git checkout develop
+git merge feature/api
+git push -u origin develop
+git branch -d feature/api
+git push origin --delete feature/api
+```
+
+---
+
+## Connexion Angular ↔ API
+
+### 59. Créer une branche pour l'intégration API
+
+```bash
+git checkout -b feature/api-integration develop
+```
+
+### 60. Configurer les environnements Angular
+
+Angular permet de définir des variables d'environnement différentes selon le contexte (dev, prod, etc.).
+
+#### 60.1 Générer les fichiers d'environnement
+
+```bash
+cd frontend
+ng generate environments
+```
+
+Cela crée :
+- `src/environments/environment.ts` (développement)
+- `src/environments/environment.development.ts` (développement local)
+
+#### 60.2 Configurer l'URL de l'API
+
+Dans `environment.ts` :
+
+```ts
+export const environment = {
+    apiUrl: 'http://localhost:3000/api',
+};
+```
+
+Dans `environment.development.ts` :
+
+```ts
+export const environment = {
+    apiUrl: 'http://localhost:3000/api',
+};
+```
+
+> En production, `apiUrl` pourrait pointer vers un autre serveur. Pour le moment, les deux sont identiques.
+
+### 61. Créer le service API pour les Teams (exemple complet)
+
+#### 61.1 Générer le service
+
+```bash
+ng generate service services/api/teams-api
+```
+
+#### 61.2 Implémenter le service `teams-api.ts`
+
+```ts
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Team } from '../core/models/team';
+import { environment } from '../../environments/environment';
+
+@Injectable({
+    providedIn: 'root',
+})
+export class TeamsApiService {
+    private http = inject(HttpClient);
+    private baseUrl = `${environment.apiUrl}/teams`;
+
+    getTeams(): Observable<Team[]> {
+        return this.http.get<Team[]>(this.baseUrl);
+    }
+
+    createTeam(nom: string): Observable<Team> {
+        return this.http.post<Team>(this.baseUrl, { nom });
+    }
+}
+```
+
+> `HttpClient` est le client HTTP d'Angular pour appeler des API REST.
+> Les méthodes retournent des `Observable` — il faudra `subscribe` dans les composants.
+
+#### 61.3 Activer `HttpClient` dans `app.config.ts`
+
+```ts
+import { provideHttpClient } from '@angular/common/http';
+
+export const appConfig: ApplicationConfig = {
+    providers: [
+        ...
+        provideHttpClient(),
+    ]
+};
+```
+
+> `provideHttpClient()` rend `HttpClient` injectable dans toute l'application.
+
+#### 61.4 Mettre à jour la page Teams
+
+Remplacer l'utilisation de `TeamsService` (mock local) par `TeamsApiService` :
+
+```ts
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { TeamsApiService } from '../../services/api/teams-api';
+
+export class TeamsComponent implements OnInit {
+    private teamsApi = inject(TeamsApiService);
+    private cdr = inject(ChangeDetectorRef);
+    teams: Team[] = [];
+
+    ngOnInit(): void {
+        this.teamsApi.getTeams().subscribe(teams => {
+            this.teams = teams;
+            this.cdr.markForCheck();
+        });
+    }
+
+    addTeam(values: Record<string, any>): void {
+        this.teamsApi.createTeam(values['nom']).subscribe(team => {
+            this.teams = [...this.teams, team];
+            this.cdr.markForCheck();
+        });
+    }
+}
+```
+
+> `.subscribe()` s'abonne à l'Observable et exécute le callback quand la réponse arrive.
+> On met à jour `teams` localement après la création pour rafraîchir la liste sans rappeler l'API.
+> **`ChangeDetectorRef.markForCheck()`** est nécessaire car Angular 21 est **zoneless** par défaut (pas de `zone.js`). Sans cet appel, les callbacks asynchrones (HTTP, setTimeout, etc.) ne déclenchent pas de re-render automatique. On utilise aussi `[...this.teams, team]` au lieu de `.push()` pour créer une nouvelle référence de tableau.
+
+### 62. Créer le service API pour les Members
+
+> En s'inspirant du `TeamsApiService`, créer `services/api/members-api.ts`.
+
+#### À faire :
+- Générer le service : `ng generate service services/api/members-api`
+- URL de base : `` `${environment.apiUrl}/teams/${teamId}/members` ``
+- Implémenter `getMembers(teamId: number): Observable<Member[]>`
+- Implémenter `createMember(teamId: number, member): Observable<Member>`
+- Mettre à jour la page Members pour utiliser `MembersApiService` au lieu de `MembersService`
+- Injecter `ChangeDetectorRef` et appeler `markForCheck()` après chaque mise à jour dans un `subscribe`
+
+> Les deux méthodes prennent `teamId` en paramètre pour construire l'URL dynamiquement.
+
+### 63. Tester l'ensemble
+
+1. Lancer l'API : `cd backend && npm run dev`
+2. Lancer Angular : `cd frontend && ng serve`
+3. Vérifier que :
+   - La liste des équipes se charge depuis l'API
+   - La création d'une équipe l'ajoute en base (vérifier `data.json`)
+   - Le clic sur une équipe affiche ses membres
+   - L'ajout d'un membre l'enregistre en base
+
+### 64. Sauvegarder et merger dans develop
+
+```bash
+git add .
+git commit -m "Intégration API Angular avec HttpClient"
+git push -u origin feature/api-integration
+git checkout develop
+git merge feature/api-integration
+git push -u origin develop
+git branch -d feature/api-integration
+git push origin --delete feature/api-integration
+```
