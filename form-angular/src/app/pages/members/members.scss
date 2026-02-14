@@ -1,3 +1,14 @@
-h2 {
-    margin-top: 2rem;
+header {
+    margin-bottom: 2rem;
+}
+
+.page {
+    display: flex;
+    gap: 2rem;
+}
+
+section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }

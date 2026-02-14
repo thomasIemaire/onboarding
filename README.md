@@ -1458,35 +1458,41 @@ export class MembersComponent {
 Ajouter la table en dessous du formulaire :
 
 ```html
-<h1>Membres</h1>
+<header>
+    <h1>Membres</h1>
+</header>
+<div class="page">
+    <section>
+        <app-form [config]="formConfig" [style.width.px]="400" (formSubmit)="addMember($event)" />
+    </section>
+    <section [style.flex]="1">
+        <h2>Liste des membres</h2>
 
-<app-form [config]="formConfig" [style.width.px]="400" (formSubmit)="addMember($event)" />
-
-<h2>Liste des membres</h2>
-
-<p-table [value]="members" [tableStyle]="{ 'min-width': '50rem' }">
-    <ng-template #header>
-        <tr>
-            <th>Nom</th>
-            <th>Prénom</th>
-            <th>Email</th>
-            <th>Statut</th>
-        </tr>
-    </ng-template>
-    <ng-template #body let-member>
-        <tr>
-            <td>{{ member.nom }}</td>
-            <td>{{ member.prenom }}</td>
-            <td>{{ member.email }}</td>
-            <td>{{ member.status }}</td>
-        </tr>
-    </ng-template>
-    <ng-template #emptymessage>
-        <tr>
-            <td colspan="4">Aucun membre</td>
-        </tr>
-    </ng-template>
-</p-table>
+        <p-table [value]="members">
+            <ng-template #header>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Statut</th>
+                </tr>
+            </ng-template>
+            <ng-template #body let-member>
+                <tr>
+                    <td>{{ member.nom }}</td>
+                    <td>{{ member.prenom }}</td>
+                    <td>{{ member.email }}</td>
+                    <td>{{ member.status }}</td>
+                </tr>
+            </ng-template>
+            <ng-template #emptymessage>
+                <tr>
+                    <td colspan="4">Aucun membre</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </section>
+</div>
 ```
 
 > `p-table` est le composant table de PrimeNG.
@@ -1497,8 +1503,19 @@ Ajouter la table en dessous du formulaire :
 #### 38.3 Ajouter le style dans `members.scss`
 
 ```scss
-h2 {
-    margin-top: 2rem;
+header {
+    margin-bottom: 2rem;
+}
+
+.page {
+    display: flex;
+    gap: 2rem;
+}
+
+section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 ```
 
