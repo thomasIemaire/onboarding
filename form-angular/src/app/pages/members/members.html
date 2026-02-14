@@ -22,7 +22,7 @@
                     <td>{{ member.nom }}</td>
                     <td>{{ member.prenom }}</td>
                     <td>{{ member.email }}</td>
-                    <td>{{ member.status }}</td>
+                    <td><p-tag [value]="member.status" [severity]="member.status | statusSeverity" /></td>
                 </tr>
             </ng-template>
             <ng-template #emptymessage>

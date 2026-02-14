@@ -1531,3 +1531,99 @@ git push -u origin develop
 git branch -d feature/list-members
 git push origin --delete feature/list-members
 ```
+
+---
+
+## Hotfix : tag statut
+
+### 40. Créer la branche hotfix
+
+```bash
+git checkout -b hotfix/tag-status main
+```
+
+### 41. Créer un pipe personnalisé `statusSeverity`
+
+Un pipe qui transforme le statut d'un membre en severity PrimeNG pour le composant `p-tag`.
+
+#### 41.1 Générer le pipe
+
+```bash
+ng generate pipe shared/status-severity
+```
+
+#### 41.2 Ajouter la logique dans `shared/status-severity-pipe.ts`
+
+```ts
+import { Pipe, PipeTransform } from '@angular/core';
+import { MemberStatus } from '../core/models/member';
+
+@Pipe({
+    name: 'statusSeverity',
+})
+export class StatusSeverityPipe implements PipeTransform {
+    transform(value: MemberStatus): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
+        switch (value) {
+            case 'admin':
+                return 'danger';
+            case 'editeur':
+                return 'warn';
+            case 'lecteur':
+                return 'info';
+            default:
+                return 'secondary';
+        }
+    }
+}
+```
+
+> Un **pipe** Angular transforme une valeur dans un template via la syntaxe `{{ value | pipeName }}`.
+> Ici, il convertit le statut (`'lecteur'`, `'editeur'`, `'admin'`) en severity PrimeNG (`'info'`, `'warn'`, `'danger'`).
+
+### 42. Utiliser le pipe et le tag dans la page members
+
+#### 42.1 Modifier `members.ts`
+
+Importer `TagModule` et le pipe :
+
+```ts
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { StatusSeverityPipe } from '../../shared/status-severity-pipe';
+
+@Component({
+    ...
+    imports: [FormComponent, TableModule, TagModule, StatusSeverityPipe]
+})
+```
+
+> Les pipes standalone s'importent directement dans le tableau `imports` du composant.
+
+#### 42.2 Modifier le template `members.html`
+
+Remplacer l'affichage texte du statut par un `p-tag` :
+
+```html
+<td><p-tag [value]="member.status" [severity]="member.status | statusSeverity" /></td>
+```
+
+> `p-tag` est le composant Tag de PrimeNG qui affiche un label coloré.
+> `[severity]` reçoit la valeur transformée par le pipe `statusSeverity`.
+
+### 43. Sauvegarder et merger le hotfix
+
+```bash
+git add .
+git commit -m "Hotfix: affichage du statut en tag PrimeNG"
+git push -u origin hotfix/tag-status
+git checkout main
+git merge hotfix/tag-status
+git push origin main
+git checkout develop
+git merge hotfix/tag-status
+git push origin develop
+git branch -d hotfix/tag-status
+git push origin --delete hotfix/tag-status
+```
+
+> Un hotfix est mergé dans **main** ET **develop** pour que les deux branches restent synchronisées.
