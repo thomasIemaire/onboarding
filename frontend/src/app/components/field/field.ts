@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FieldConfig } from '../../core/models/field';
 import { SelectField } from '../select-field/select-field';
 import { TextField } from '../text-field/text-field';
@@ -12,11 +12,13 @@ import { TextField } from '../text-field/text-field';
 export class Field {
   @Input({ required: true }) field!: FieldConfig;
   @Input() submitted: boolean = false;
+  @Output() fieldValueChange = new EventEmitter<{ key: string; value: any }>();
 
   value: any = null;
 
   onValueChange(value: any) {
     this.value = value;
+    this.fieldValueChange.emit({ key: this.field.key, value: value });
   }
 
   get showError(): boolean {

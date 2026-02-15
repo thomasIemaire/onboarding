@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Form } from '../../components/form/form';
 import { FormConfig } from '../../core/models/form';
 import { Member } from '../../core/models/member';
+import { Members as MerbersService } from '../../services/members';
 
 @Component({
   selector: 'app-members',
@@ -10,25 +11,27 @@ import { Member } from '../../core/models/member';
   styleUrl: './members.scss',
 })
 export class Members {
-  members: Member[] = [];
+  private membersService = inject(MerbersService);
+  members: Member[] = this.membersService.getMembers();
 
   formConfig: FormConfig = {
     title: 'Ajouter un membre',
     rows: [
       {
         fields: [
-          { type: 'text', label: 'Nom', required: true },
-          { type: 'text', label: 'Prénom', required: true }
+          { key: 'nom', type: 'text', label: 'Nom', required: true },
+          { key: 'prenom', type: 'text', label: 'Prénom', required: true }
         ]
       },
       {
         fields: [
-          { type: 'text', label: 'Email', required: true }
+          { key: 'email', type: 'text', label: 'Email', required: true }
         ]
       },
       {
         fields: [
           {
+            key: 'role',
             type: 'select',
             label: 'Statut',
             options: ['membre', 'admin'],
@@ -43,13 +46,19 @@ export class Members {
           label: 'Ajouter',
           severity: 'primary',
           icon: 'pi pi-plus',
-          command: () => this.addMember()
+          command: () => { }
         }
       ]
     }
   };
 
-  addMember(): void {
-    // TODO: récupérer les valeurs du formulaire et ajouter le membre
+  addMember(values: Record<string, any>): void {
+    const member: Member = {
+      nom: values['nom'],
+      prenom: values['prenom'],
+      email: values['email'],
+      role: values['role'] ?? 'membre',
+    };
+    this.membersService.addMember(member);
   }
 }
