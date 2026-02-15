@@ -62,11 +62,17 @@ export const appConfig: ApplicationConfig = {
 
 #### 4.2 Importer les icônes PrimeNG
 
-Ajouter la ligne suivante dans `styles.scss` :
+Ajouter la ligne suivante dans `src/styles.scss` :
 
 ```scss
 @import "primeicons/primeicons.css";
 ```
+
+
+#### Documentation PrimeNG
+
+[primeng.org](https://primeng.org/)
+
 
 ### 5. Lancer le serveur de développement
 
@@ -88,6 +94,7 @@ L'application est accessible sur `http://localhost:4200/`.
 #### Documentation officielle
 
 [angular.dev](https://angular.dev/)
+
 
 ### 6. Préparer l'architecture du projet
 
@@ -171,8 +178,8 @@ git checkout -b feature/form develop
 ## Développement des composants
 
 > Architecture des composants :
-> `FormComponent` > `FormRowComponent` > `FieldComponent` > `TextFieldComponent` / `SelectFieldComponent`
-> `FormComponent` > `FormActionsComponent` > `ActionComponent`
+> `Form` > `FormRow` > `Field` > `TextField` / `SelectField`
+> `Form` > `FormActions` > `Action`
 
 ### 9. Créer un composant text-field
 
@@ -193,7 +200,7 @@ import { InputTextModule } from 'primeng/inputtext';
     ...
     imports: [InputTextModule, FormsModule]
 })
-export class TextFieldComponent {
+export class TextField {
     @Input() value: string = '';
 }
 ```
@@ -226,7 +233,7 @@ import { SelectModule } from 'primeng/select';
     ...
     imports: [SelectModule, FormsModule]
 })
-export class SelectFieldComponent {
+export class SelectField {
     @Input() options: any[] = [];
     @Input() selected: any = null;
 }
@@ -271,16 +278,22 @@ ng generate component components/field
 
 ```ts
 import { Component, Input } from '@angular/core';
-import { TextFieldComponent } from '../text-field/text-field';
-import { SelectFieldComponent } from '../select-field/select-field';
+import { TextField } from '../text-field/text-field';
+import { SelectField } from '../select-field/select-field';
 import { FieldConfig } from '../../core/models/field';
 
 @Component({
     ...
-    imports: [TextFieldComponent, SelectFieldComponent]
+    imports: [TextField, SelectField]
 })
-export class FieldComponent {
+export class Field {
     @Input({ required: true }) field!: FieldConfig;
+
+    value: any = null;
+
+    onValueChange(value: any) {
+        this.value = value;
+    }
 }
 ```
 
@@ -349,14 +362,14 @@ ng generate component components/form-row
 
 ```ts
 import { Component, Input } from '@angular/core';
-import { FieldComponent } from '../field/field';
+import { Field } from '../field/field';
 import { FormRowConfig } from '../../core/models/form-row';
 
 @Component({
     ...
-    imports: [FieldComponent]
+    imports: [Field]
 })
-export class FormRowComponent {
+export class FormRow {
     @Input({ required: true }) row!: FormRowConfig;
 }
 ```
@@ -431,7 +444,7 @@ import { ActionConfig } from '../../core/models/action';
     ...
     imports: [ButtonModule]
 })
-export class ActionComponent {
+export class Action {
     @Input({ required: true }) action!: ActionConfig;
 }
 ```
@@ -475,14 +488,14 @@ ng generate component components/form-actions
 
 ```ts
 import { Component, Input } from '@angular/core';
-import { ActionComponent } from '../action/action';
+import { Action } from '../action/action';
 import { FormActionsConfig } from '../../core/models/form-actions';
 
 @Component({
     ...
-    imports: [ActionComponent]
+    imports: [Action]
 })
-export class FormActionsComponent {
+export class FormActions {
     @Input({ required: true }) config!: FormActionsConfig;
 }
 ```
@@ -537,15 +550,15 @@ ng generate component components/form
 
 ```ts
 import { Component, Input } from '@angular/core';
-import { FormRowComponent } from '../form-row/form-row';
-import { FormActionsComponent } from '../form-actions/form-actions';
+import { FormRow } from '../form-row/form-row';
+import { FormActions } from '../form-actions/form-actions';
 import { FormConfig } from '../../core/models/form';
 
 @Component({
     ...
-    imports: [FormRowComponent, FormActionsComponent]
+    imports: [FormRow, FormActions]
 })
-export class FormComponent {
+export class Form {
     @Input({ required: true }) config!: FormConfig;
 }
 ```
@@ -576,13 +589,13 @@ export class FormComponent {
 
 > Architecture finale :
 > ```
-> FormComponent
-> ├── FormRowComponent
-> │   └── FieldComponent
-> │       ├── TextFieldComponent
-> │       └── SelectFieldComponent
-> └── FormActionsComponent
->     └── ActionComponent
+> Form
+> ├── FormRow
+> │   └── Field
+> │       ├── TextField
+> │       └── SelectField
+> └── FormActions
+>     └── Action
 > ```
 
 ### 16. Sauvegarder et merger dans develop
@@ -637,10 +650,10 @@ Dans `app.routes.ts` :
 
 ```ts
 import { Routes } from '@angular/router';
-import { MembersComponent } from './pages/members/members';
+import { Members } from './pages/members/members';
 
 export const routes: Routes = [
-    { path: 'members', component: MembersComponent },
+    { path: 'members', component: Members },
     { path: '', redirectTo: 'members', pathMatch: 'full' }
 ];
 ```
@@ -682,15 +695,15 @@ export const appConfig: ApplicationConfig = {
 
 ```ts
 import { Component } from '@angular/core';
-import { FormComponent } from '../../components/form/form';
+import { Form } from '../../components/form/form';
 import { FormConfig } from '../../core/models/form';
 import { Member } from '../../core/models/member';
 
 @Component({
     ...
-    imports: [FormComponent]
+    imports: [Form]
 })
-export class MembersComponent {
+export class Members {
     members: Member[] = [];
 
     formConfig: FormConfig = {
@@ -831,8 +844,8 @@ import { InputTextModule } from 'primeng/inputtext';
     ...
     imports: [InputTextModule, FormsModule]
 })
-export class TextFieldComponent {
-    value: string = '';
+export class TextField {
+    @Input() value: string = '';
     @Output() valueChange = new EventEmitter<string>();
 
     onInput(): void {
@@ -858,7 +871,7 @@ import { SelectModule } from 'primeng/select';
     ...
     imports: [SelectModule, FormsModule]
 })
-export class SelectFieldComponent {
+export class SelectField {
     @Input() options: any[] = [];
     @Input() selected: any = null;
     @Output() valueChange = new EventEmitter<any>();
@@ -872,7 +885,7 @@ export class SelectFieldComponent {
 #### 25.4 Modifier le template `select-field.html`
 
 ```html
-<p-select [options]="options" [selected]="selected" (ngModelChange)="onSelect()" placeholder="Sélectionner..." fluid />
+<p-select [options]="options" [(ngModel)]="selected" (ngModelChange)="onSelect()" placeholder="Sélectionner..." fluid />
 ```
 
 ### 26. Ajouter la validation dans le composant Field
@@ -881,22 +894,22 @@ export class SelectFieldComponent {
 
 ```ts
 import { Component, Input } from '@angular/core';
-import { TextFieldComponent } from '../text-field/text-field';
-import { SelectFieldComponent } from '../select-field/select-field';
+import { TextField } from '../text-field/text-field';
+import { SelectField } from '../select-field/select-field';
 import { FieldConfig } from '../../core/models/field';
 
 @Component({
     ...
-    imports: [TextFieldComponent, SelectFieldComponent]
+    imports: [TextField, SelectField]
 })
-export class FieldComponent {
+export class Field {
     @Input({ required: true }) field!: FieldConfig;
     @Input() submitted: boolean = false;
 
     value: any = '';
 
-    onValueChange(val: any): void {
-        this.value = val;
+    onValueChange(value: any): void {
+        this.value = value;
     }
 
     get showError(): boolean {
@@ -919,10 +932,10 @@ export class FieldComponent {
 
 @switch (field.type) {
     @case ('text') {
-        <app-text-field (valueChange)="onValueChange($event)" />
+        <app-text-field (valueChange)="onValueChange($event)" [value]="field.default" />
     }
     @case ('select') {
-        <app-select-field [options]="field.options ?? []" (valueChange)="onValueChange($event)" />
+        <app-select-field [options]="field.options ?? []" [selected]="field.default" (valueChange)="onValueChange($event)" />
     }
 }
 
@@ -953,7 +966,7 @@ p-select {
 }
 
 .error {
-    color: #e24c4c;
+    color: var(--p-red-500);
     margin-top: 0.25rem;
     display: block;
 }
@@ -965,15 +978,15 @@ p-select {
 
 ```ts
 import { Component, Input } from '@angular/core';
-import { FormRowComponent } from '../form-row/form-row';
-import { FormActionsComponent } from '../form-actions/form-actions';
+import { FormRow } from '../form-row/form-row';
+import { FormActions } from '../form-actions/form-actions';
 import { FormConfig } from '../../core/models/form';
 
 @Component({
     ...
-    imports: [FormRowComponent, FormActionsComponent]
+    imports: [FormRow, FormActions]
 })
-export class FormComponent {
+export class Form {
     @Input({ required: true }) config!: FormConfig;
     submitted: boolean = false;
 
@@ -1003,14 +1016,14 @@ export class FormComponent {
 
 ```ts
 import { Component, Input } from '@angular/core';
-import { FieldComponent } from '../field/field';
+import { Field } from '../field/field';
 import { FormRowConfig } from '../../core/models/form-row';
 
 @Component({
     ...
-    imports: [FieldComponent]
+    imports: [Field]
 })
-export class FormRowComponent {
+export class FormRow {
     @Input({ required: true }) row!: FormRowConfig;
     @Input() submitted: boolean = false;
 }
@@ -1038,14 +1051,14 @@ Pour notifier le form qu'un bouton a été cliqué (déclenchement de la validat
 
 ```ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { ActionComponent } from '../action/action';
+import { Action } from '../action/action';
 import { FormActionsConfig } from '../../core/models/form-actions';
 
 @Component({
     ...
-    imports: [ActionComponent]
+    imports: [Action]
 })
-export class FormActionsComponent {
+export class FormActions {
     @Input({ required: true }) config!: FormActionsConfig;
     @Output() actionClick = new EventEmitter<void>();
 
@@ -1155,7 +1168,7 @@ export interface FieldConfig {
 
 > `key` permet de mapper la valeur saisie au bon champ (ex: `'nom'`, `'email'`).
 
-### 33. Créer le service MembersService
+### 33. Créer le service Members
 
 ```bash
 ng generate service services/members
@@ -1170,7 +1183,7 @@ import { Member } from '../core/models/member';
 @Injectable({
     providedIn: 'root',
 })
-export class MembersService {
+export class Members {
     private members: Member[] = [
         { nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@email.com', role: 'admin' },
         { nom: 'Martin', prenom: 'Sophie', email: 'sophie.martin@email.com', role: 'membre' },
@@ -1192,7 +1205,7 @@ export class MembersService {
 
 ### 34. Propager les valeurs du formulaire vers le parent
 
-Pour que le formulaire puisse remonter les valeurs saisies, il faut propager un `Output` depuis chaque `FieldComponent` jusqu'au `FormComponent`.
+Pour que le formulaire puisse remonter les valeurs saisies, il faut propager un `Output` depuis chaque `Field` jusqu'au `Form`.
 
 #### 34.1 Modifier `field.ts`
 
@@ -1200,24 +1213,24 @@ Ajouter un `Output` qui émet la clé et la valeur à chaque changement :
 
 ```ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { TextFieldComponent } from '../text-field/text-field';
-import { SelectFieldComponent } from '../select-field/select-field';
+import { TextField } from '../text-field/text-field';
+import { SelectField } from '../select-field/select-field';
 import { FieldConfig } from '../../core/models/field';
 
 @Component({
     ...
-    imports: [TextFieldComponent, SelectFieldComponent]
+    imports: [TextField, SelectField]
 })
-export class FieldComponent {
+export class Field {
     @Input({ required: true }) field!: FieldConfig;
     @Input() submitted: boolean = false;
     @Output() fieldValueChange = new EventEmitter<{ key: string; value: any }>();
 
     value: any = '';
 
-    onValueChange(val: any): void {
+    onValueChange(value: any): void {
         this.value = val;
-        this.fieldValueChange.emit({ key: this.field.key, value: val });
+        this.fieldValueChange.emit({ key: this.field.key, value: value });
     }
 
     get showError(): boolean {
@@ -1232,14 +1245,14 @@ Re-émettre l'événement de changement de valeur :
 
 ```ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { FieldComponent } from '../field/field';
+import { Field } from '../field/field';
 import { FormRowConfig } from '../../core/models/form-row';
 
 @Component({
     ...
-    imports: [FieldComponent]
+    imports: [Field]
 })
-export class FormRowComponent {
+export class FormRow {
     @Input({ required: true }) row!: FormRowConfig;
     @Input() submitted: boolean = false;
     @Output() fieldValueChange = new EventEmitter<{ key: string; value: any }>();
@@ -1270,15 +1283,15 @@ Collecter les valeurs et émettre un `formSubmit` avec validation :
 
 ```ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { FormRowComponent } from '../form-row/form-row';
-import { FormActionsComponent } from '../form-actions/form-actions';
+import { FormRow } from '../form-row/form-row';
+import { FormActions } from '../form-actions/form-actions';
 import { FormConfig } from '../../core/models/form';
 
 @Component({
     ...
-    imports: [FormRowComponent, FormActionsComponent]
+    imports: [FormRow, FormActions]
 })
-export class FormComponent {
+export class Form {
     @Input({ required: true }) config!: FormConfig;
     @Output() formSubmit = new EventEmitter<Record<string, any>>();
 
@@ -1319,7 +1332,7 @@ export class FormComponent {
 }
 ```
 
-> Le `FormComponent` collecte les valeurs via `onFieldValueChange` et les émet via `formSubmit` uniquement si la validation passe.
+> Le `Form` collecte les valeurs via `onFieldValueChange` et les émet via `formSubmit` uniquement si la validation passe.
 
 ### 35. Utiliser le service dans la page members
 
@@ -1327,17 +1340,18 @@ export class FormComponent {
 
 ```ts
 import { Component, inject } from '@angular/core';
-import { FormComponent } from '../../components/form/form';
+import { Form } from '../../components/form/form';
 import { FormConfig } from '../../core/models/form';
 import { Member } from '../../core/models/member';
-import { MembersService } from '../../services/members';
+import { Members } from '../../services/members';
+import { Members as MerbersService } from '../../services/members';
 
 @Component({
     ...
-    imports: [FormComponent]
+    imports: [Form]
 })
-export class MembersComponent {
-    private membersService = inject(MembersService);
+export class Members {
+    private membersService = inject(MerbersService);
     members: Member[] = this.membersService.getMembers();
 
     formConfig: FormConfig = {
@@ -1390,7 +1404,7 @@ export class MembersComponent {
 }
 ```
 
-> `inject(MembersService)` est l'injection de dépendance fonctionnelle (alternative au constructeur).
+> `inject(Members)` est l'injection de dépendance fonctionnelle (alternative au constructeur).
 > `addMember` reçoit les valeurs du formulaire via l'Output `formSubmit` et les ajoute au service.
 
 #### 35.2 Modifier le template `members.html`
@@ -1399,7 +1413,7 @@ export class MembersComponent {
 <app-form [config]="formConfig" [style.width.px]="400" (formSubmit)="addMember($event)" />
 ```
 
-> `(formSubmit)` écoute l'événement émis par le `FormComponent` après validation.
+> `(formSubmit)` écoute l'événement émis par le `Form` après validation.
 
 ### 36. Sauvegarder et merger dans develop
 
@@ -1432,17 +1446,17 @@ Importer `TableModule` de PrimeNG :
 
 ```ts
 import { Component, inject } from '@angular/core';
-import { FormComponent } from '../../components/form/form';
+import { Form } from '../../components/form/form';
 import { FormConfig } from '../../core/models/form';
 import { Member } from '../../core/models/member';
-import { MembersService } from '../../services/members';
+import { Members } from '../../services/members';
 import { TableModule } from 'primeng/table';
 
 @Component({
     ...
-    imports: [FormComponent, TableModule]
+    imports: [Form, TableModule]
 })
-export class MembersComponent {
+export class Members {
     ...
 }
 ```
@@ -1523,6 +1537,9 @@ git merge feature/list-members
 git push -u origin develop
 git branch -d feature/list-members
 git push origin --delete feature/list-members
+git checkout main
+git merge develop
+git push -u origin main
 ```
 
 ---
@@ -1545,11 +1562,11 @@ Un pipe qui transforme le statut d'un membre en severity PrimeNG pour le composa
 ng generate pipe shared/pipes/role-severity
 ```
 
-#### 41.2 Ajouter la logique dans `shared/pipes/role-severity.ts`
+#### 41.2 Ajouter la logique dans `shared/pipes/role-severity-pipe.ts`
 
 ```ts
 import { Pipe, PipeTransform } from '@angular/core';
-import { MemberRole } from '../core/models/member';
+import { MemberRole } from '../../core/models/member';
 
 @Pipe({
     name: 'roleSeverity',
@@ -1580,11 +1597,11 @@ Importer `TagModule` et le pipe :
 ```ts
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { RoleSeverityPipe } from '../../shared/pipes/role-severity';
+import { RoleSeverityPipe } from '../../shared/pipes/role-severity-pipe';
 
 @Component({
     ...
-    imports: [FormComponent, TableModule, TagModule, RoleSeverityPipe]
+    imports: [Form, TableModule, TagModule, RoleSeverityPipe]
 })
 ```
 
@@ -1639,7 +1656,7 @@ Le champ `status` du modèle `Member` est renommé en `role` avec les valeurs `'
 - Modifier `core/models/member.ts` : renommer `MemberStatus` en `MemberRole`, changer les valeurs en `'membre' | 'admin'`, renommer le champ `status` en `role`
 - Ajouter un champ `teamId: number` à l'interface `Member` pour lier un membre à une équipe
 - Mettre à jour `services/members.ts` : adapter les données mock, ajouter `teamId` aux membres, remplacer `getMembers()` par `getMembersByTeam(teamId: number)`
-- Renommer le pipe `StatusSeverityPipe` en `RoleSeverityPipe` dans `shared/pipes/role-severity.ts`, adapter le mapping
+- Renommer le pipe `StatusSeverityPipe` en `RoleSeverityPipe` dans `shared/pipes/role-severity-pipe.ts`, adapter le mapping
 - Mettre à jour la page `members` pour utiliser `role` au lieu de `status`
 
 ### 46. Créer le modèle Team
@@ -1654,7 +1671,7 @@ Générer un service `services/teams` et implémenter :
 - `getTeamById(id: number)` : retourne une équipe par son id
 - `addTeam(nom: string)` : ajoute une nouvelle équipe avec un id auto-incrémenté
 
-> Inspirez-vous de la structure du `MembersService`.
+> Inspirez-vous de la structure du `Members`.
 
 ### 48. Créer la page Teams
 
@@ -1704,8 +1721,8 @@ Dans `app.routes.ts`, configurer les routes suivantes :
 
 | Route | Composant | Description |
 |---|---|---|
-| `teams` | `TeamsComponent` | Liste des équipes |
-| `teams/:teamId/membres` | `MembersComponent` | Membres d'une équipe |
+| `teams` | `Teams` | Liste des équipes |
+| `teams/:teamId/membres` | `Members` | Membres d'une équipe |
 | ` ` | redirect → `teams` | Route par défaut |
 | `**` | redirect → `teams` | Toute route inconnue |
 
@@ -2152,7 +2169,7 @@ Remplacer l'utilisation de `TeamsService` (mock local) par `TeamsApiService` :
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { TeamsApiService } from '../../services/api/teams-api';
 
-export class TeamsComponent implements OnInit {
+export class Teams implements OnInit {
     private teamsApi = inject(TeamsApiService);
     private cdr = inject(ChangeDetectorRef);
     teams: Team[] = [];
@@ -2186,7 +2203,7 @@ export class TeamsComponent implements OnInit {
 - URL de base : `` `${environment.apiUrl}/teams/${teamId}/members` ``
 - Implémenter `getMembers(teamId: number): Observable<Member[]>`
 - Implémenter `createMember(teamId: number, member): Observable<Member>`
-- Mettre à jour la page Members pour utiliser `MembersApiService` au lieu de `MembersService`
+- Mettre à jour la page Members pour utiliser `MembersApiService` au lieu de `Members`
 - Injecter `ChangeDetectorRef` et appeler `markForCheck()` après chaque mise à jour dans un `subscribe`
 
 > Les deux méthodes prennent `teamId` en paramètre pour construire l'URL dynamiquement.
