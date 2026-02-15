@@ -4,10 +4,12 @@ import { FormConfig } from '../../core/models/form';
 import { Member } from '../../core/models/member';
 import { Members as MerbersService } from '../../services/members';
 import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { RoleSeverityPipe } from '../../shared/pipes/role-severity-pipe';
 
 @Component({
   selector: 'app-members',
-  imports: [Form, TableModule],
+  imports: [Form, TableModule, TagModule, RoleSeverityPipe],
   templateUrl: './members.html',
   styleUrl: './members.scss',
 })

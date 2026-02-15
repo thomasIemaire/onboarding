@@ -19,7 +19,7 @@
                     <td>{{ member.nom }}</td>
                     <td>{{ member.prenom }}</td>
                     <td>{{ member.email }}</td>
-                    <td>{{ member.role }}</td>
+                    <td><p-tag [value]="member.role" [severity]="member.role | roleSeverity" /></td>
                 </tr>
             </ng-template>
             <ng-template #emptymessage>
