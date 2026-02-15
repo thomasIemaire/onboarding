@@ -11,3 +11,13 @@ input,
 p-select {
     width: 100%;
 }
+
+.required {
+    color: var(--p-red-500);
+}
+
+.error {
+    color: var(--p-red-500);
+    margin-top: 0.25rem;
+    display: block;
+}

@@ -17,13 +17,13 @@ export class Members {
     rows: [
       {
         fields: [
-          { type: 'text', label: 'Nom' },
-          { type: 'text', label: 'Prénom' }
+          { type: 'text', label: 'Nom', required: true },
+          { type: 'text', label: 'Prénom', required: true }
         ]
       },
       {
         fields: [
-          { type: 'text', label: 'Email' }
+          { type: 'text', label: 'Email', required: true }
         ]
       },
       {

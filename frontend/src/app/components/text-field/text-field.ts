@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 
@@ -10,4 +10,9 @@ import { InputTextModule } from 'primeng/inputtext';
 })
 export class TextField {
   @Input() value: string = '';
+  @Output() valueChange = new EventEmitter<string>();
+
+  onInput(): void {
+    this.valueChange.emit(this.value);
+  }
 }

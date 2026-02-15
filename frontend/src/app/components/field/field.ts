@@ -11,10 +11,15 @@ import { TextField } from '../text-field/text-field';
 })
 export class Field {
   @Input({ required: true }) field!: FieldConfig;
+  @Input() submitted: boolean = false;
 
   value: any = null;
 
   onValueChange(value: any) {
     this.value = value;
+  }
+
+  get showError(): boolean {
+    return this.submitted && !!this.field.required && !this.value;
   }
 }

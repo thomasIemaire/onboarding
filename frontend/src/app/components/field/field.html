@@ -1,12 +1,21 @@
 @if (field.label) {
-    <label>{{ field.label }}</label>
+<label>
+    {{ field.label }}
+    @if (field.required) {
+    <span class="required">*</span>
+    }
+</label>
 }
 
 @switch (field.type) {
-    @case ('text') {
-        <app-text-field [value]="field.default" (valueChange)="onValueChange($event)" />
-    }
-    @case ('select') {
-        <app-select-field [options]="field.options ?? []" [selected]="field.default" (valueChange)="onValueChange($event)" />
-    }
+@case ('text') {
+<app-text-field (valueChange)="onValueChange($event)" [value]="field.default" />
+}
+@case ('select') {
+<app-select-field [options]="field.options ?? []" [selected]="field.default" (valueChange)="onValueChange($event)" />
+}
+}
+
+@if (showError) {
+<small class="error">Champ obligatoire</small>
 }

@@ -5,4 +5,5 @@ export interface FieldConfig {
     type: FieldType;
     options?: any[];  // uniquement pour le type 'select'
     default?: any;    // valeur par défaut du champ
+    required?: boolean;
 }

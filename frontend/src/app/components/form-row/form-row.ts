@@ -10,4 +10,5 @@ import { Field } from '../field/field';
 })
 export class FormRow {
   @Input({ required: true }) row!: FormRowConfig;
+  @Input() submitted: boolean = false;
 }

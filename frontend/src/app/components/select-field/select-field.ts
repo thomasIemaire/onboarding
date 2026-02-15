@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
 
@@ -9,6 +9,11 @@ import { SelectModule } from 'primeng/select';
   styleUrl: './select-field.scss',
 })
 export class SelectField {
-    @Input() options: any[] = [];
-    @Input() selected: any = null;
+  @Input() options: any[] = [];
+  @Input() selected: any = null;
+  @Output() valueChange = new EventEmitter<any>();
+
+  onSelect(): void {
+    this.valueChange.emit(this.selected);
+  }
 }

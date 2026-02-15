@@ -1,11 +1,11 @@
 @if (config.title) {
-    <h2>{{ config.title }}</h2>
+<h2>{{ config.title }}</h2>
 }
 
 @for (row of config.rows; track row) {
-    <app-form-row [row]="row" />
+<app-form-row [row]="row" [submitted]="submitted" />
 }
 
 @if (config.actions) {
-    <app-form-actions [config]="config.actions" />
+<app-form-actions [config]="config.actions" (actionClick)="onSubmit()" />
 }

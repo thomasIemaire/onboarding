@@ -1,5 +1,5 @@
 <div class="form-actions">
     @for (action of config.actions; track action) {
-        <app-action [action]="action" />
+    <app-action [action]="action" (click)="onAction()" />
     }
 </div>

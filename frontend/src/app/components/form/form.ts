@@ -11,4 +11,9 @@ import { FormRow } from '../form-row/form-row';
 })
 export class Form {
   @Input({ required: true }) config!: FormConfig;
+  submitted: boolean = false;
+
+  onSubmit(): void {
+    this.submitted = true;
+  }
 }
