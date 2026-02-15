@@ -3,10 +3,11 @@ import { Form } from '../../components/form/form';
 import { FormConfig } from '../../core/models/form';
 import { Member } from '../../core/models/member';
 import { Members as MerbersService } from '../../services/members';
+import { TableModule } from 'primeng/table';
 
 @Component({
   selector: 'app-members',
-  imports: [Form],
+  imports: [Form, TableModule],
   templateUrl: './members.html',
   styleUrl: './members.scss',
 })
