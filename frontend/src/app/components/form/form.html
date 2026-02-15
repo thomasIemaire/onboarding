@@ -1,0 +1,11 @@
+@if (config.title) {
+    <h2>{{ config.title }}</h2>
+}
+
+@for (row of config.rows; track row) {
+    <app-form-row [row]="row" />
+}
+
+@if (config.actions) {
+    <app-form-actions [config]="config.actions" />
+}

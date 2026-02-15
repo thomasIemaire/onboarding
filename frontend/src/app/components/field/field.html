@@ -1,0 +1,12 @@
+@if (field.label) {
+    <label>{{ field.label }}</label>
+}
+
+@switch (field.type) {
+    @case ('text') {
+        <app-text-field [value]="field.default" (valueChange)="onValueChange($event)" />
+    }
+    @case ('select') {
+        <app-select-field [options]="field.options ?? []" [selected]="field.default" (valueChange)="onValueChange($event)" />
+    }
+}

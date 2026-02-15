@@ -1,0 +1,10 @@
+.form-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+
+    app-field {
+        flex: 1;
+        min-width: 0;
+    }
+}
